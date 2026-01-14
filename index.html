@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الموارد البشرية</title>
+    <script>
+        const originalWarn = console.warn;
+        console.warn = function(msg) {
+            if (!msg.includes('cdn.tailwindcss.com')) {
+                originalWarn.apply(console, arguments);
+            }
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    
+    <!-- صفحة تسجيل الدخول -->
+    <div id="loginPage" class="page active">
+        <div class="container mx-auto p-6 flex items-center justify-center min-h-screen">
+            <div class="w-full max-w-md">
+                <div class="bg-white rounded-xl shadow-2xl p-8">
+                    <div class="text-center mb-8">
+                        <div class="text-6xl mb-4">🔐</div>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                            نظام إدارة الموارد البشرية
+                        </h1>
+                        <p class="text-gray-600">قم بتسجيل الدخول</p>
+                    </div>
+
+                    <div id="loginError" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                        اسم المستخدم أو كلمة المرور غير صحيحة
+                    </div>
+
+                    <form onsubmit="handleLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">اسم المستخدم</label>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="أدخل اسم المستخدم"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">كلمة المرور</label>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="أدخل كلمة المرور"
+                                required
+                            />
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-bold"
+                        >
+                            تسجيل الدخول
+                        </button>
+                    </form>
+
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <button 
+                            onclick="loginAsGuest()" 
+                            class="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                        >
+                            الدخول كزائر (عرض فقط)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الصفحة الرئيسية -->
+    <div id="homePage" class="page">
+        <div class="container mx-auto p-6">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">نظام إدارة الموارد البشرية</h1>
+                        <p class="text-gray-600">اختر القسم المطلوب</p>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm text-gray-500 mb-2">مسجل دخول كـ</p>
+                        <div class="flex items-center gap-2">
+                            <span id="userRole" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-bold"></span>
+                            <button onclick="logout()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                خروج
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div onclick="goToSection('workforce')" class="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-2xl hover:scale-105 transition-all">
+                    <div class="text-6xl text-center mb-4">👥</div>
+                    <h3 class="text-xl font-bold text-gray-800 text-center mb-2">قوة عاملة</h3>
+                    <p class="text-gray-500 text-center text-sm" id="count-workforce">0 ملف</p>
+                </div>
+
+                <div onclick="goToSection('forms')" class="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-2xl hover:scale-105 transition-all">
+                    <div class="text-6xl text-center mb-4">📝</div>
+                    <h3 class="text-xl font-bold text-gray-800 text-center mb-2">نماذج</h3>
+                    <p class="text-gray-500 text-center text-sm" id="count-forms">0 ملف</p>
+                </div>
+
+                <div onclick="goToSection('contracts')" class="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-2xl hover:scale-105 transition-all">
+                    <div class="text-6xl text-center mb-4">📋</div>
+                    <h3 class="text-xl font-bold text-gray-800 text-center mb-2">قسم التعاقد</h3>
+                    <p class="text-gray-500 text-center text-sm" id="count-contracts">0 ملف</p>
+                </div>
+
+                <div onclick="goToSection('employee_services')" class="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-2xl hover:scale-105 transition-all">
+                    <div class="text-6xl text-center mb-4">👔</div>
+                    <h3 class="text-xl font-bold text-gray-800 text-center mb-2">خدمات الموظفين</h3>
+                    <p class="text-gray-500 text-center text-sm" id="count-employee_services">0 ملف</p>
+                </div>
+
+                <div onclick="goToSection('payroll')" class="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-2xl hover:scale-105 transition-all">
+                    <div class="text-6xl text-center mb-4">💰</div>
+                    <h3 class="text-xl font-bold text-gray-800 text-center mb-2">الرواتب والاستحقاقات</h3>
+                    <p class="text-gray-500 text-center text-sm" id="count-payroll">0 ملف</p>
+                </div>
+
+                <div onclick="goToSection('files_dept')" class="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-2xl hover:scale-105 transition-all">
+                    <div class="text-6xl text-center mb-4">📁</div>
+                    <h3 class="text-xl font-bold text-gray-800 text-center mb-2">قسم الملفات</h3>
+                    <p class="text-gray-500 text-center text-sm" id="count-files_dept">0 ملف</p>
+                </div>
+
+                <div onclick="goToSection('passports')" class="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-2xl hover:scale-105 transition-all">
+                    <div class="text-6xl text-center mb-4">✈️</div>
+                    <h3 class="text-xl font-bold text-gray-800 text-center mb-2">الجوازات</h3>
+                    <p class="text-gray-500 text-center text-sm" id="count-passports">0 ملف</p>
+                </div>
+
+                <div onclick="goToSection('attendance')" class="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-2xl hover:scale-105 transition-all">
+                    <div class="text-6xl text-center mb-4">⏰</div>
+                    <h3 class="text-xl font-bold text-gray-800 text-center mb-2">مراقبة الدوام</h3>
+                    <p class="text-gray-500 text-center text-sm" id="count-attendance">0 ملف</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحة القسم -->
+    <div id="sectionPage" class="page">
+        <div class="container mx-auto p-6">
+            <button onclick="goToHome()" class="mb-6 flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition-all">
+                <span>⬅️</span>
+                <span class="font-medium">العودة للرئيسية</span>
+            </button>
+
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6 pb-4 border-b">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-blue-100 p-3 rounded-lg text-3xl" id="sectionIcon">📊</div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800" id="sectionTitle">قسم</h2>
+                            <p class="text-sm text-gray-500" id="fileCount">0 ملف</p>
+                        </div>
+                    </div>
+                    
+                    <button id="downloadAllBtn" class="hidden items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        <span>⬇️</span>
+                        <span>تحميل الكل</span>
+                    </button>
+                </div>
+
+                <div id="uploadArea" class="mb-6">
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <div class="text-4xl mb-2">📤</div>
+                            <p class="text-sm text-gray-500">
+                                <span class="font-semibold">اضغط لرفع الملفات</span> أو اسحب وأفلت
+                            </p>
+                            <p class="text-xs text-gray-400 mt-1">PDF, DOC, DOCX, XLS, XLSX</p>
+                        </div>
+                        <input type="file" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx" id="fileInput" />
+                    </label>
+                </div>
+
+                <div id="filesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sections = {
+            workforce: { name: 'قوة عاملة', icon: '👥' },
+            forms: { name: 'نماذج', icon: '📝' },
+            contracts: { name: 'قسم التعاقد', icon: '📋' },
+            employee_services: { name: 'خدمات الموظفين', icon: '👔' },
+            payroll: { name: 'الرواتب والاستحقاقات', icon: '💰' },
+            files_dept: { name: 'قسم الملفات', icon: '📁' },
+            passports: { name: 'الجوازات', icon: '✈️' },
+            attendance: { name: 'مراقبة الدوام', icon: '⏰' }
+        };
+
+        let currentUser = '';
+        let currentSection = '';
+        let files = {};
+        Object.keys(sections).forEach(key => files[key] = []);
+
+        const adminCredentials = {
+            username: 'admin',
+            password: 'admin123'
+        };
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('loginError');
+
+            if (username === adminCredentials.username && password === adminCredentials.password) {
+                loginAs('admin');
+                errorDiv.classList.add('hidden');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            } else {
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function loginAsGuest() {
+            loginAs('user');
+        }
+
+        function loginAs(role) {
+            currentUser = role;
+            document.getElementById('loginPage').classList.remove('active');
+            document.getElementById('homePage').classList.add('active');
+            document.getElementById('userRole').textContent = role === 'admin' ? '👨‍💼 المسؤول' : '👤 زائر';
+            updateFileCounts();
+        }
+
+        function logout() {
+            currentUser = '';
+            document.getElementById('homePage').classList.remove('active');
+            document.getElementById('sectionPage').classList.remove('active');
+            document.getElementById('loginPage').classList.add('active');
+        }
+
+        function goToSection(sectionId) {
+            currentSection = sectionId;
+            document.getElementById('homePage').classList.remove('active');
+            document.getElementById('sectionPage').classList.add('active');
+            
+            const section = sections[sectionId];
+            document.getElementById('sectionTitle').textContent = section.name;
+            document.getElementById('sectionIcon').textContent = section.icon;
+            
+            const uploadArea = document.getElementById('uploadArea');
+            if (currentUser === 'admin') {
+                uploadArea.style.display = 'block';
+            } else {
+                uploadArea.style.display = 'none';
+            }
+            
+            renderFiles();
+        }
+
+        function goToHome() {
+            document.getElementById('sectionPage').classList.remove('active');
+            document.getElementById('homePage').classList.add('active');
+            updateFileCounts();
+        }
+
+        function updateFileCounts() {
+            Object.keys(sections).forEach(key => {
+                const countEl = document.getElementById(`count-${key}`);
+                if (countEl) {
+                    countEl.textContent = `${files[key].length} ملف`;
+                }
+            });
+        }
+
+        function renderFiles() {
+            const filesList = document.getElementById('filesList');
+            const fileCount = document.getElementById('fileCount');
+            const downloadAllBtn = document.getElementById('downloadAllBtn');
+            
+            const sectionFiles = files[currentSection];
+            fileCount.textContent = `${sectionFiles.length} ملف`;
+            
+            if (sectionFiles.length > 0) {
+                downloadAllBtn.classList.remove('hidden');
+                downloadAllBtn.classList.add('flex');
+            } else {
+                downloadAllBtn.classList.add('hidden');
+            }
+
+            if (sectionFiles.length === 0) {
+                filesList.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl text-gray-300 mb-4">📄</div>
+                        <p class="text-gray-500">لا توجد ملفات في هذا القسم</p>
+                        ${currentUser === 'admin' ? '<p class="text-sm text-gray-400 mt-2">قم برفع الملفات للبدء</p>' : ''}
+                    </div>
+                `;
+            } else {
+                filesList.innerHTML = `
+                    <div class="space-y-3">
+                        ${sectionFiles.map(file => `
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div class="flex items-center gap-3 flex-1">
+                                    <div class="bg-blue-100 p-2 rounded text-xl">📄</div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-gray-800 truncate">${file.name}</p>
+                                        <p class="text-xs text-gray-500">${file.size} • ${file.date}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-2">
+                                    <button onclick="downloadFile('${file.id}')" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" title="تحميل">
+                                        ⬇️
+                                    </button>
+                                    ${currentUser === 'admin' ? `
+                                        <button onclick="deleteFile('${file.id}')" class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" title="حذف">
+                                            🗑️
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (currentUser !== 'admin') return;
+            
+            const uploadedFiles = Array.from(e.target.files);
+            uploadedFiles.forEach(file => {
+                const fileData = {
+                    id: Date.now() + '-' + Math.random(),
+                    name: file.name,
+                    size: (file.size / 1024).toFixed(2) + ' KB',
+                    date: new Date().toLocaleDateString('ar-SA'),
+                    file: file
+                };
+                files[currentSection].push(fileData);
+            });
+            renderFiles();
+            updateFileCounts();
+            e.target.value = '';
+        });
+
+        function downloadFile(fileId) {
+            const file = files[currentSection].find(f => f.id === fileId);
+            if (file) {
+                const url = URL.createObjectURL(file.file);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        function deleteFile(fileId) {
+            if (currentUser !== 'admin') return;
+            files[currentSection] = files[currentSection].filter(f => f.id !== fileId);
+            renderFiles();
+            updateFileCounts();
+        }
+
+        document.getElementById('downloadAllBtn').addEventListener('click', function() {
+            files[currentSection].forEach(file => downloadFile(file.id));
+        });
+    </script>
+</body>
+</html>

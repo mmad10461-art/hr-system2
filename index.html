@@ -4,9 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام إدارة الموارد البشرية</title>
+    <script>
+        const originalWarn = console.warn;
+        console.warn = function(msg) {
+            if (!msg.includes('cdn.tailwindcss.com')) {
+                originalWarn.apply(console, arguments);
+            }
+        };
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
         body {
@@ -18,78 +24,20 @@
         .page.active {
             display: block;
         }
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3b82f6;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
     
-    <!-- Setup Page -->
-    <div id="setupPage" class="page active">
-        <div class="container mx-auto p-6 flex items-center justify-center min-h-screen">
-            <div class="w-full max-w-2xl">
-                <div class="bg-white rounded-xl shadow-2xl p-8">
-                    <div class="text-center mb-8">
-                        <div class="text-6xl mb-4">⚡</div>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">إعداد Supabase</h1>
-                        <p class="text-gray-600">أدخل بيانات Supabase (خطوتين فقط!)</p>
-                    </div>
-
-                    <div class="bg-green-50 border-r-4 border-green-500 p-4 mb-6">
-                        <p class="text-sm text-gray-700 mb-2"><strong>✅ خطوات سريعة:</strong></p>
-                        <ol class="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                            <li>روح لـ <a href="https://supabase.com" target="_blank" class="text-blue-600 underline font-bold">supabase.com</a></li>
-                            <li>اضغط <strong>Start your project</strong> وسجّل دخول بـ GitHub</li>
-                            <li>أنشئ مشروع جديد واختر اسم وكلمة مرور</li>
-                            <li>بعد الإنشاء، روح لـ <strong>Settings → API</strong></li>
-                            <li>انسخ <strong>Project URL</strong> و <strong>anon public</strong> key</li>
-                        </ol>
-                    </div>
-
-                    <form id="supabaseSetupForm" class="space-y-4">
-                        <div>
-                            <label class="block text-gray-700 font-medium mb-2">Supabase URL</label>
-                            <input type="url" id="supabaseUrl" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://xxxxx.supabase.co" required />
-                        </div>
-
-                        <div>
-                            <label class="block text-gray-700 font-medium mb-2">Supabase Anon Key</label>
-                            <textarea id="supabaseKey" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="eyJhbGc..." rows="3" required></textarea>
-                        </div>
-
-                        <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-bold">
-                            ✅ حفظ والمتابعة
-                        </button>
-                    </form>
-
-                    <div class="mt-4">
-                        <button onclick="loadSavedSupabaseConfig()" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm">
-                            📥 تحميل الإعدادات المحفوظة
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Login Page -->
-    <div id="loginPage" class="page">
+    <!-- صفحة تسجيل الدخول -->
+    <div id="loginPage" class="page active">
         <div class="container mx-auto p-6 flex items-center justify-center min-h-screen">
             <div class="w-full max-w-md">
                 <div class="bg-white rounded-xl shadow-2xl p-8">
                     <div class="text-center mb-8">
                         <div class="text-6xl mb-4">🔐</div>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">نظام إدارة الموارد البشرية</h1>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                            نظام إدارة الموارد البشرية
+                        </h1>
                         <p class="text-gray-600">قم بتسجيل الدخول</p>
                     </div>
 
@@ -100,28 +48,40 @@
                     <form onsubmit="handleLogin(event)" class="space-y-4">
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">اسم المستخدم</label>
-                            <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="أدخل اسم المستخدم" required />
+                            <input 
+                                type="text" 
+                                id="username" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="أدخل اسم المستخدم"
+                                required
+                            />
                         </div>
 
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">كلمة المرور</label>
-                            <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="أدخل كلمة المرور" required />
+                            <input 
+                                type="password" 
+                                id="password" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="أدخل كلمة المرور"
+                                required
+                            />
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-bold">
+                        <button 
+                            type="submit" 
+                            class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-bold"
+                        >
                             تسجيل الدخول
                         </button>
                     </form>
 
                     <div class="mt-6 pt-6 border-t border-gray-200">
-                        <button onclick="loginAsGuest()" class="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                        <button 
+                            onclick="loginAsGuest()" 
+                            class="w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                        >
                             الدخول كزائر (عرض فقط)
-                        </button>
-                    </div>
-
-                    <div class="mt-4 text-center">
-                        <button onclick="backToSetup()" class="text-sm text-blue-600 hover:underline">
-                            ⚙️ تغيير إعدادات Supabase
                         </button>
                     </div>
                 </div>
@@ -129,7 +89,7 @@
         </div>
     </div>
 
-    <!-- Home Page -->
+    <!-- الصفحة الرئيسية -->
     <div id="homePage" class="page">
         <div class="container mx-auto p-6">
             <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
@@ -142,7 +102,9 @@
                         <p class="text-sm text-gray-500 mb-2">مسجل دخول كـ</p>
                         <div class="flex items-center gap-2">
                             <span id="userRole" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-bold"></span>
-                            <button onclick="logout()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">خروج</button>
+                            <button onclick="logout()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                                خروج
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -206,7 +168,7 @@
         </div>
     </div>
 
-    <!-- Section Page -->
+    <!-- صفحة القسم -->
     <div id="sectionPage" class="page">
         <div class="container mx-auto p-6">
             <button onclick="goToHome()" class="mb-6 flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow hover:shadow-lg transition-all">
@@ -231,23 +193,16 @@
                 </div>
 
                 <div id="uploadArea" class="mb-6">
-                    <label id="uploadLabel" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
                             <div class="text-4xl mb-2">📤</div>
                             <p class="text-sm text-gray-500">
                                 <span class="font-semibold">اضغط لرفع الملفات</span> أو اسحب وأفلت
                             </p>
-                            <p class="text-xs text-gray-400 mt-1">PDF, DOC, DOCX, XLS, XLSX (حتى 50MB)</p>
+                            <p class="text-xs text-gray-400 mt-1">PDF, DOC, DOCX, XLS, XLSX</p>
                         </div>
                         <input type="file" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx" id="fileInput" />
                     </label>
-                    
-                    <div id="uploadProgress" class="hidden mt-4">
-                        <div class="flex items-center gap-3">
-                            <div class="loader"></div>
-                            <span class="text-gray-600" id="uploadStatus">جاري رفع الملفات...</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div id="filesList"></div>
@@ -256,9 +211,6 @@
     </div>
 
     <script>
-        const { createClient } = supabase;
-        let supabaseClient;
-
         const sections = {
             workforce: { name: 'قوة عاملة', icon: '👥' },
             forms: { name: 'نماذج', icon: '📝' },
@@ -274,103 +226,79 @@
         let currentUser = '';
         let currentSection = '';
         let files = {};
-        Object.keys(sections).forEach(key => files[key] = []);
+
+        // Load files from localStorage
+        function loadFilesFromStorage() {
+            const savedFiles = localStorage.getItem('hrSystemFiles');
+            if (savedFiles) {
+                try {
+                    const parsedFiles = JSON.parse(savedFiles);
+                    Object.keys(parsedFiles).forEach(key => {
+                        files[key] = parsedFiles[key].map(fileData => ({
+                            ...fileData,
+                            file: base64ToFile(fileData.base64, fileData.name, fileData.type)
+                        }));
+                    });
+                } catch (e) {
+                    console.error('Error loading files:', e);
+                    initializeFiles();
+                }
+            } else {
+                initializeFiles();
+            }
+        }
+
+        function initializeFiles() {
+            Object.keys(sections).forEach(key => files[key] = []);
+        }
+
+        function saveFilesToStorage() {
+            try {
+                const filesToSave = {};
+                Object.keys(files).forEach(key => {
+                    filesToSave[key] = files[key].map(fileData => ({
+                        id: fileData.id,
+                        name: fileData.name,
+                        size: fileData.size,
+                        date: fileData.date,
+                        type: fileData.file.type,
+                        base64: fileData.base64
+                    }));
+                });
+                localStorage.setItem('hrSystemFiles', JSON.stringify(filesToSave));
+            } catch (e) {
+                console.error('Error saving files:', e);
+                alert('تحذير: الملفات كبيرة جداً. قد لا يتم حفظها بشكل دائم.');
+            }
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function base64ToFile(base64, filename, mimeType) {
+            const arr = base64.split(',');
+            const mime = mimeType || arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while(n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], filename, {type: mime});
+        }
+
+        loadFilesFromStorage();
 
         const adminCredentials = {
             username: 'admin',
             password: 'admin123'
         };
-
-        // Supabase Setup
-        document.getElementById('supabaseSetupForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const supabaseUrl = document.getElementById('supabaseUrl').value.trim();
-            const supabaseKey = document.getElementById('supabaseKey').value.trim();
-
-            try {
-                supabaseClient = createClient(supabaseUrl, supabaseKey);
-                
-                // Test connection
-                const { data, error } = await supabaseClient.from('hr_files').select('count');
-                
-                if (error && error.code !== 'PGRST116') {
-                    throw new Error('تأكد من إنشاء الجدول في Supabase');
-                }
-                
-                localStorage.setItem('supabaseConfig', JSON.stringify({ supabaseUrl, supabaseKey }));
-                
-                document.getElementById('setupPage').classList.remove('active');
-                document.getElementById('loginPage').classList.add('active');
-                
-                await loadAllFiles();
-                alert('✅ تم الاتصال بنجاح!');
-            } catch (error) {
-                alert('خطأ: ' + error.message + '\n\nتأكد من:\n1. البيانات صحيحة\n2. إنشاء جدول hr_files في Supabase');
-            }
-        });
-
-        function loadSavedSupabaseConfig() {
-            const saved = localStorage.getItem('supabaseConfig');
-            if (saved) {
-                const config = JSON.parse(saved);
-                document.getElementById('supabaseUrl').value = config.supabaseUrl;
-                document.getElementById('supabaseKey').value = config.supabaseKey;
-                alert('✅ تم تحميل الإعدادات المحفوظة');
-            } else {
-                alert('❌ لا توجد إعدادات محفوظة');
-            }
-        }
-
-        function backToSetup() {
-            document.getElementById('loginPage').classList.remove('active');
-            document.getElementById('homePage').classList.remove('active');
-            document.getElementById('sectionPage').classList.remove('active');
-            document.getElementById('setupPage').classList.add('active');
-        }
-
-        // Check if Supabase is configured
-        window.addEventListener('load', async function() {
-            const saved = localStorage.getItem('supabaseConfig');
-            if (saved) {
-                try {
-                    const config = JSON.parse(saved);
-                    supabaseClient = createClient(config.supabaseUrl, config.supabaseKey);
-                    document.getElementById('setupPage').classList.remove('active');
-                    document.getElementById('loginPage').classList.add('active');
-                    await loadAllFiles();
-                } catch (error) {
-                    console.error('Error loading Supabase:', error);
-                }
-            }
-        });
-
-        async function loadAllFiles() {
-            if (!supabaseClient) return;
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('hr_files')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-                
-                Object.keys(sections).forEach(key => files[key] = []);
-                
-                if (data) {
-                    data.forEach(file => {
-                        if (files[file.section]) {
-                            files[file.section].push(file);
-                        }
-                    });
-                }
-                
-                updateFileCounts();
-            } catch (error) {
-                console.error('Error loading files:', error);
-            }
-        }
 
         function handleLogin(event) {
             event.preventDefault();
@@ -473,16 +401,16 @@
                                     <div class="bg-blue-100 p-2 rounded text-xl">📄</div>
                                     <div class="flex-1 min-w-0">
                                         <p class="font-medium text-gray-800 truncate">${file.name}</p>
-                                        <p class="text-xs text-gray-500">${file.size} • ${new Date(file.created_at).toLocaleDateString('ar-SA')}</p>
+                                        <p class="text-xs text-gray-500">${file.size} • ${file.date}</p>
                                     </div>
                                 </div>
                                 
                                 <div class="flex items-center gap-2">
-                                    <button onclick="downloadFile(${file.id})" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" title="تحميل">
+                                    <button onclick="downloadFile('${file.id}')" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" title="تحميل">
                                         ⬇️
                                     </button>
                                     ${currentUser === 'admin' ? `
-                                        <button onclick="deleteFile(${file.id}, '${file.file_path}')" class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" title="حذف">
+                                        <button onclick="deleteFile('${file.id}')" class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" title="حذف">
                                             🗑️
                                         </button>
                                     ` : ''}
@@ -498,109 +426,48 @@
             if (currentUser !== 'admin') return;
             
             const uploadedFiles = Array.from(e.target.files);
-            const uploadProgress = document.getElementById('uploadProgress');
-            const uploadLabel = document.getElementById('uploadLabel');
-            const uploadStatus = document.getElementById('uploadStatus');
             
-            uploadProgress.classList.remove('hidden');
-            uploadLabel.style.opacity = '0.5';
-            uploadLabel.style.pointerEvents = 'none';
-            
-            try {
-                for (let i = 0; i < uploadedFiles.length; i++) {
-                    const file = uploadedFiles[i];
-                    uploadStatus.textContent = `جاري رفع الملف ${i + 1} من ${uploadedFiles.length}...`;
-                    
-                    const fileName = `${Date.now()}_${file.name}`;
-                    const filePath = `${currentSection}/${fileName}`;
-                    
-                    // Upload to storage
-                    const { data: uploadData, error: uploadError } = await supabaseClient.storage
-                        .from('hr-files')
-                        .upload(filePath, file);
-                    
-                    if (uploadError) throw uploadError;
-                    
-                    // Get public URL
-                    const { data: { publicUrl } } = supabaseClient.storage
-                        .from('hr-files')
-                        .getPublicUrl(filePath);
-                    
-                    // Save metadata to database
-                    const { data, error } = await supabaseClient
-                        .from('hr_files')
-                        .insert([
-                            {
-                                name: file.name,
-                                size: (file.size / 1024).toFixed(2) + ' KB',
-                                section: currentSection,
-                                file_url: publicUrl,
-                                file_path: filePath
-                            }
-                        ])
-                        .select();
-                    
-                    if (error) throw error;
-                    
-                    if (data && data[0]) {
-                        files[currentSection].push(data[0]);
-                    }
-                }
-                
-                renderFiles();
-                updateFileCounts();
-                alert('✅ تم رفع الملفات بنجاح!');
-            } catch (error) {
-                alert('خطأ في رفع الملفات: ' + error.message);
-            } finally {
-                uploadProgress.classList.add('hidden');
-                uploadLabel.style.opacity = '1';
-                uploadLabel.style.pointerEvents = 'auto';
-                e.target.value = '';
+            for (const file of uploadedFiles) {
+                const base64 = await fileToBase64(file);
+                const fileData = {
+                    id: Date.now() + '-' + Math.random(),
+                    name: file.name,
+                    size: (file.size / 1024).toFixed(2) + ' KB',
+                    date: new Date().toLocaleDateString('ar-SA'),
+                    file: file,
+                    base64: base64
+                };
+                files[currentSection].push(fileData);
             }
+            
+            saveFilesToStorage();
+            renderFiles();
+            updateFileCounts();
+            e.target.value = '';
         });
 
-        async function downloadFile(fileId) {
+        function downloadFile(fileId) {
             const file = files[currentSection].find(f => f.id === fileId);
-            if (file && file.file_url) {
+            if (file) {
+                const url = URL.createObjectURL(file.file);
                 const a = document.createElement('a');
-                a.href = file.file_url;
+                a.href = url;
                 a.download = file.name;
-                a.target = '_blank';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             }
         }
 
-        async function deleteFile(fileId, filePath) {
+        function deleteFile(fileId) {
             if (currentUser !== 'admin') return;
-            
             if (!confirm('هل أنت متأكد من حذف هذا الملف؟')) return;
             
-            try {
-                // Delete from storage
-                const { error: storageError } = await supabaseClient.storage
-                    .from('hr-files')
-                    .remove([filePath]);
-                
-                if (storageError) throw storageError;
-                
-                // Delete from database
-                const { error: dbError } = await supabaseClient
-                    .from('hr_files')
-                    .delete()
-                    .eq('id', fileId);
-                
-                if (dbError) throw dbError;
-                
-                files[currentSection] = files[currentSection].filter(f => f.id !== fileId);
-                renderFiles();
-                updateFileCounts();
-                alert('✅ تم حذف الملف بنجاح');
-            } catch (error) {
-                alert('خطأ في حذف الملف: ' + error.message);
-            }
+            files[currentSection] = files[currentSection].filter(f => f.id !== fileId);
+            saveFilesToStorage();
+            renderFiles();
+            updateFileCounts();
         }
 
         document.getElementById('downloadAllBtn').addEventListener('click', function() {
